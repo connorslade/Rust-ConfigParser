@@ -1,0 +1,14 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  runTests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Cargo
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+      - name: Run Unit Tests
+        run: cargo test
