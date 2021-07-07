@@ -2,4 +2,4 @@
  * This is a very simple and easy to use library for parsing of simple configuration files.
  */
 
-mod config;
+pub mod config;
