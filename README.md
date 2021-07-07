@@ -1,4 +1,4 @@
-# Rust-ConfigParser
+# Rust-ConfigParser [![CI](https://github.com/Basicprogrammer10/Rust-ConfigParser/actions/workflows/main.yml/badge.svg)](https://github.com/Basicprogrammer10/Rust-ConfigParser/actions/workflows/main.yml) ![Crates.io](https://img.shields.io/crates/d/simple_config_parser) ![Lines of code](https://img.shields.io/tokei/lines/github/Basicprogrammer10/Rust-ConfigParser)
 ⚙ Very simple config parsing lib for rust!
 
 ## 💠 Install
