@@ -1,3 +1,7 @@
+# 0.1.5
+- Update Keywords to be valid for [Crates.io](crates.io)
+- Update Docs for some functions
+
 ## 0.1.4
  - Add Keywords, Categories and documentation to Cargo.toml
  - Allow for comments mid line

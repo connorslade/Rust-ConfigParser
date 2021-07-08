@@ -92,7 +92,8 @@ impl Config {
         self.parse(&contents[..])
     }
 
-    /// Parse a string as a config file
+    /// Parse a string as a config file.
+    /// Will automatically ignore any carriage returns.
     /// ## Example
     /// ```rust
     /// // Import Lib
