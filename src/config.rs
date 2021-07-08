@@ -200,8 +200,55 @@ impl Config {
         }
         Some(item.to_lowercase() == "true")
     }
-}
 
-// GET
-// - Int
-// - Float
+    /// Get a value from the config as an integer.
+    /// Uses .parse() to parse the value to a int.
+    /// ## Example
+    /// ```rust
+    /// // Import Lib
+    /// use simple_config_parser::config::Config;
+    /// 
+    /// // Create a new config from a string
+    /// let mut cfg = Config::new(None);
+    /// cfg.parse("hello = True\nrust = 15").ok().unwrap();
+    /// 
+    /// // Get a value from the config
+    /// // Will Panic if the key is not found
+    /// let hello = cfg.get_bool("hello").unwrap();
+    /// assert_eq!(hello, true);
+    /// 
+    /// let rust = cfg.get_int("rust").unwrap();
+    /// assert_eq!(rust, 15);
+    /// ```
+    pub fn get_int(&self, key: &str) -> Option<i64> {
+        let item = self.get(key).unwrap_or("".to_string());
+        if item == "" {
+            return None;
+        }
+        Some(item.parse::<i64>().unwrap())
+    }
+
+    /// Get a value from the config as a float.
+    /// Uses .parse() to parse the value to a float.
+    /// ## Example
+    /// ```rust
+    /// // Import Lib
+    /// use simple_config_parser::config::Config;
+    /// 
+    /// // Create a new config from a string
+    /// let mut cfg = Config::new(None);
+    /// cfg.parse("pi = 3.1515926").ok().unwrap();
+    /// 
+    /// // Get a value from the config
+    /// // Will Panic if the key is not found
+    /// let pi = cfg.get_float("pi").unwrap();
+    /// assert_eq!(pi, 3.1515926);
+    /// ```
+    pub fn get_float(&self, key: &str) -> Option<f64> {
+        let item = self.get(key).unwrap_or("".to_string());
+        if item == "" {
+            return None;
+        }
+        Some(item.parse::<f64>().unwrap())
+    }
+}

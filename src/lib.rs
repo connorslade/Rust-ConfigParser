@@ -86,6 +86,25 @@ let mut cfg2 = Config::new(Some("config.cfg"));
 // Get a value from the config (As a string)
 println!("Hello, {}", cfg.get("hello").unwrap());
 ```
+
+Get value from a config as a bool, int and float.
+```rust
+// Import Lib
+use simple_config_parser::config::Config;
+
+// Create a new config with no file
+let mut cfg = Config::new(None);
+cfg.parse("hello = True\nrust = 15\npi = 3.1415926535").ok().unwrap();
+
+// Get a value from the config as bool
+assert_eq!(cfg.get_bool("hello").unwrap(), true);
+
+// Get a value from the config as int
+assert_eq!(cfg.get_int("rust").unwrap(), 15);
+
+// Get a value from the config as float
+assert_eq!(cfg.get_float("pi").unwrap(), 3.1415926535);
+```
 */
 
 pub mod config;

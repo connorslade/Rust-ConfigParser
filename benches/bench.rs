@@ -26,6 +26,24 @@ pub fn parse_file() {
     cfg.read().ok().unwrap();
 }
 
+pub fn parse_string_get_bool() {
+    let mut cfg = Config::new(None);
+    cfg.parse("hello = true ; Comment").ok().unwrap();
+    cfg.get_bool("hello");
+}
+
+pub fn parse_string_get_int() {
+    let mut cfg = Config::new(None);
+    cfg.parse("hello = 1 ; Comment").ok().unwrap();
+    cfg.get_int("hello");
+}
+
+pub fn parse_string_get_float() {
+    let mut cfg = Config::new(None);
+    cfg.parse("hello = 1.0 ; Comment").ok().unwrap();
+    cfg.get_float("hello");
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -53,5 +71,23 @@ mod tests {
     /// Config file reading and parsing benchmark.
     fn bench_read_parse(b: &mut Bencher) {
         b.iter(|| parse_file());
+    }
+
+    #[bench]
+    /// Parse string and get bool value.
+    fn bench_parse_get_bool(b: &mut Bencher) {
+        b.iter(|| parse_string_get_bool());
+    }
+
+    #[bench]
+    /// Parse string and get bool value.
+    fn bench_parse_get_int(b: &mut Bencher) {
+        b.iter(|| parse_string_get_int());
+    }
+
+    #[bench]
+    /// Parse string and get bool value.
+    fn bench_parse_get_float(b: &mut Bencher) {
+        b.iter(|| parse_string_get_float());
     }
 }

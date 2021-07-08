@@ -144,3 +144,37 @@ fn test_bool_value() {
     assert_eq!(cfg.get_bool("test").unwrap(), true);
     assert_eq!(cfg.get_bool("tset").unwrap(), false);
 }
+
+#[test]
+/// Test getting value as a integer
+fn test_int_value() {
+    let mut cfg = Config::new(None);
+    cfg.parse(
+        "
+    test = 1
+    tset = 100
+    ",
+    )
+    .ok()
+    .unwrap();
+
+    assert_eq!(cfg.get_int("test").unwrap(), 1);
+    assert_eq!(cfg.get_int("tset").unwrap(), 100);
+}
+
+#[test]
+/// Test getting value as a float
+fn test_float_value() {
+    let mut cfg = Config::new(None);
+    cfg.parse(
+        "
+    test = 1.123
+    pi = 3.14159 ; And so on
+    ",
+    )
+    .ok()
+    .unwrap();
+
+    assert_eq!(cfg.get_float("test").unwrap(), 1.123);
+    assert_eq!(cfg.get_float("pi").unwrap(), 3.14159);
+}
