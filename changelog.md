@@ -1,0 +1,10 @@
+## 0.1.4
+ - Add Keywords, Categories and documentation to Cargo.toml
+ - Allow for comments mid line
+ - Remove Trailing / Leading spaces in Key and Value
+ - Use more constants in the code
+ - Ignore Sections for the time being
+ - Add Benchmarks
+ - Most recently defined config options will be used first
+    - Ex: If you have a config file that defines the key hello twice the one lower in the file will be used
+- Make `cfg.get(key)` return a `Option<String>` instead of a `String`

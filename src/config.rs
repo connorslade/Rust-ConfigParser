@@ -1,5 +1,8 @@
 use std::fs;
 
+/// Define valid comment chars.
+static COMMENT_CHARS: [&str; 2] = ["#", ";"];
+
 /// Config Struct
 pub struct Config {
     pub file: String,
@@ -13,11 +16,33 @@ pub enum ConfigError {
     FileReadError,
     /// File path has not been defined
     /// You need to define the path to the config file before using this function.
-    /// Or just use `cfg.parse(<STRING>);` instead.
+    /// Or just use `cfg.parse("<STRING>");` instead.
     NoFileDefined,
     /// The config data is not valid
     /// The data read from the file is not valid.
     InvalidConfig,
+}
+
+/// Removes any comments from each line of the config file.
+fn remove_comments(mut s: &str) -> &str {
+    for i in COMMENT_CHARS.iter() {
+        s = s.split(i).next().unwrap();
+    }
+    s
+}
+
+/// Remove any leading or trailing whitespace
+fn remove_whitespace(mut value: String) -> String {
+    // Remove any leading spaces
+    while value.starts_with(' ') {
+        value = value[1..value.len()].to_string();
+    }
+
+    // Remove any trailing spaces
+    while value.ends_with(' ') {
+        value = value[..value.len() - 1].to_string();
+    }
+    value
 }
 
 /// Config Implementation
@@ -27,10 +52,10 @@ impl Config {
     /// ```rust
     /// // Import Lib
     /// use simple_config_parser::config::Config;
-    /// 
+    ///
     /// // Create a new config with no file
     /// let mut cfg = Config::new(None);
-    /// 
+    ///
     /// // Create a new config with a file
     /// let mut cfg2 = Config::new(Some("config.cfg"));
     /// ```
@@ -48,10 +73,10 @@ impl Config {
     /// ```rust
     /// // Import Lib
     /// use simple_config_parser::config::Config;
-    /// 
+    ///
     /// // Create a new config with a file
     /// let mut cfg = Config::new(Some("config.cfg"));
-    /// 
+    ///
     /// // Read the config file
     /// cfg.read().ok().expect("Error reading the config file");
     /// ```
@@ -72,10 +97,10 @@ impl Config {
     /// ```rust
     /// // Import Lib
     /// use simple_config_parser::config::Config;
-    /// 
+    ///
     /// // Create a new config without a file
     /// let mut cfg = Config::new(None);
-    /// 
+    ///
     /// // Parse a string as a config file
     /// cfg.parse("hello = world\n\rrust = is great\n\rtest = \"TEST\"").ok().expect("Error parsing the config file");
     /// ```
@@ -84,23 +109,31 @@ impl Config {
         let mut done: Vec<[String; 2]> = Vec::new();
 
         for line in data.split('\n') {
-            // Skip empty / commented lines
+            // Remove any space at the beginning of the line
+            let mut line = &remove_whitespace(line.to_string())[..];
+
+            // Skip empty / commented lines and sections (for now)
             match line.chars().next() {
-                Some('#') => continue,
-                Some(';') => continue,
+                Some(i) if COMMENT_CHARS.contains(&&i.to_string()[..]) => continue,
+                Some('[') => continue,
                 None => continue,
                 Some(_) => {}
             }
+
+            // Remove any comments from the line
+            line = remove_comments(line);
+
+            // Split the line into key and value
             let parts: Vec<&str> = line.split('=').collect();
             if parts.len() != 2 {
                 return Err(ConfigError::InvalidConfig);
             }
+
+            // Remove any spaces in the key
             let key = parts[0].replace(" ", "").to_lowercase();
             let mut value = parts[1].to_string();
 
-            while value.starts_with(' ') {
-                value = value[1..value.len()].to_string();
-            }
+            value = remove_whitespace(value);
 
             done.push([key, value]);
         }
@@ -109,28 +142,32 @@ impl Config {
     }
 
     /// Gets a value from the config.
-    /// Is CaSe-Sensitive.
+    /// Is not CaSe-Sensitive.
     /// ## Example
     /// ```rust
     /// // Import Lib
     /// use simple_config_parser::config::Config;
-    /// 
+    ///
     /// // Create a new config with a file
     /// let mut cfg = Config::new(Some("config.cfg"));
-    /// 
+    ///
     /// // Read the config file
     /// cfg.read().ok().expect("Error reading the config file");
-    /// 
+    ///
     /// // Get a value from the config
-    /// println!("Hello, {}", cfg.get("hello"));
+    /// // Will Panic if the key is not found
+    /// println!("Hello, {}", cfg.get("hello").unwrap());
+    /// 
+    /// // You can set a default value if the key is not found
+    /// println!("Hello, {}", cfg.get("hello").unwrap_or("Fallback".to_string()));
     /// ```
-    pub fn get(&self, key: &str) -> String {
+    pub fn get(&self, key: &str) -> Option<String> {
         let key = key.to_lowercase();
-        for i in self.data.iter() {
+        for i in self.data.iter().rev() {
             if i[0] == key {
-                return i[1].to_string();
+                return Some(i[1].to_string());
             }
         }
-        "".to_string()
+        None
     }
 }

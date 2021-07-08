@@ -1,12 +1,14 @@
 # Rust-ConfigParser [![CI](https://github.com/Basicprogrammer10/Rust-ConfigParser/actions/workflows/main.yml/badge.svg)](https://github.com/Basicprogrammer10/Rust-ConfigParser/actions/workflows/main.yml) ![Crates.io](https://img.shields.io/crates/d/simple_config_parser) ![Lines of code](https://img.shields.io/tokei/lines/github/Basicprogrammer10/Rust-ConfigParser)
 ⚙ Very simple config parsing lib for rust!
 
+I made this because I just needed a simple config parser for one of my projects and wanted to learn how to make a rust crate. Hopefully you will find it useful as well. :P
+
 ## 💠 Install
 
 Just add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-simple_config_parser = "0.1.3"
+simple_config_parser = "0.1.4"
 ```
 
 ## 📀 Quick Start
@@ -19,6 +21,16 @@ hello = World
 rust = Is great
 test = "TEST"
 ```
+
+## 🐳 Why
+
+There are already a few config parsers out there for rust so why use this one?
+
+There are a few reasons:
+- It's super simple to use
+- Its faster then some other popular config parsers (by only a few hundred Nano seconds but still)
+- It's code is easy to understand (For me at least)
+- It would make me happy (:P)
 
 ## 💥Examples
 
@@ -64,5 +76,5 @@ let mut cfg = Config::new(None);
 let mut cfg2 = Config::new(Some("config.cfg"));
 
 // Get a value from the config (As a string)
-println!("Hello, {}", cfg.get("hello"));
+println!("Hello, {}", cfg.get("hello").unwrap());
 ```
