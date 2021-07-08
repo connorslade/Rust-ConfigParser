@@ -127,3 +127,20 @@ fn test_last_key_wins() {
 
     assert_eq!(cfg.get("hello").unwrap(), "world");
 }
+
+#[test]
+/// Test getting value as a bool
+fn test_bool_value() {
+    let mut cfg = Config::new(None);
+    cfg.parse(
+        "
+    test = True
+    tset = false
+    ",
+    )
+    .ok()
+    .unwrap();
+
+    assert_eq!(cfg.get_bool("test").unwrap(), true);
+    assert_eq!(cfg.get_bool("tset").unwrap(), false);
+}

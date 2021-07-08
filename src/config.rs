@@ -1,3 +1,4 @@
+//! This module contains the things needed to load and parse ini like configuration files
 use std::fs;
 
 /// Define valid comment chars.
@@ -47,7 +48,8 @@ fn remove_whitespace(mut value: String) -> String {
 
 /// Config Implementation
 impl Config {
-    /// Default Config
+    /// Create a new Config struct with all default values except for the file path.
+    /// This path can be any path EX: `Sone("config.cfg")` or `NONE` if you want to load config from a string.
     /// ## Example
     /// ```rust
     /// // Import Lib
@@ -158,7 +160,7 @@ impl Config {
     /// // Get a value from the config
     /// // Will Panic if the key is not found
     /// println!("Hello, {}", cfg.get("hello").unwrap());
-    /// 
+    ///
     /// // You can set a default value if the key is not found
     /// println!("Hello, {}", cfg.get("hello").unwrap_or("Fallback".to_string()));
     /// ```
@@ -171,4 +173,35 @@ impl Config {
         }
         None
     }
+
+    /// Get a value from the config as a boolean.
+    /// It checks if the value is `true` or `false`.
+    /// If the value if anything else, it will return `false`.
+    /// ## Example
+    /// ```rust
+    /// // Import Lib
+    /// use simple_config_parser::config::Config;
+    /// 
+    /// // Create a new config from a string
+    /// let mut cfg = Config::new(None);
+    /// 
+    /// // Parse a string as a config file
+    /// cfg.parse("hello = true\nrust = false").ok().expect("Error parsing the config file");
+    /// 
+    /// // Get a value from the config
+    /// // Will Panic if the key is not found
+    /// let value = cfg.get_bool("hello").unwrap();
+    /// assert_eq!(value, true);
+    /// ```
+    pub fn get_bool(&self, key: &str) -> Option<bool> {
+        let item = self.get(key).unwrap_or("".to_string());
+        if item == "" {
+            return None;
+        }
+        Some(item.to_lowercase() == "true")
+    }
 }
+
+// GET
+// - Int
+// - Float
