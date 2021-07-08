@@ -1,6 +1,11 @@
-# 0.1.5
+# Changelog
+## 0.1.5
 - Update Keywords to be valid for [Crates.io](crates.io)
 - Update Docs for some functions
+- Added Readme to the `lib.rs` file
+- Add `get_bool` function to get config values as Booleans
+- Add `get_int` function to get config values as Integers
+- Add `get_float` function to get config values as Floats
 
 ## 0.1.4
  - Add Keywords, Categories and documentation to Cargo.toml
