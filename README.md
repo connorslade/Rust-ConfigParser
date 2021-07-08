@@ -8,7 +8,7 @@ I made this because I just needed a simple config parser for one of my projects 
 Just add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-simple_config_parser = "0.1.4"
+simple_config_parser = "0.1.5"
 ```
 
 ## 📀 Quick Start
@@ -34,14 +34,11 @@ There are a few reasons:
 
 ## 💥Examples
 
-Import Module.
+Create a new config.
 ```rust
 // Import Lib
 use simple_config_parser::config::Config;
-```
 
-Create a new config.
-```rust
 // Create a new config with no file
 let mut cfg = Config::new(None);
 
@@ -51,8 +48,11 @@ let mut cfg2 = Config::new(Some("config.cfg"));
 
 Read a config file and parse it.
 ```rust
+// Import Lib
+use simple_config_parser::config::Config;
+
 // Create a new config with a file
-let mut cfg2 = Config::new(Some("config.cfg"));
+let mut cfg = Config::new(Some("config.cfg"));
 
 // Read / parse config file
 cfg.read().ok().expect("Error reading the config file");
@@ -60,6 +60,9 @@ cfg.read().ok().expect("Error reading the config file");
 
 Load config from a string.
 ```rust
+// Import Lib
+use simple_config_parser::config::Config;
+
 // Create a new config with no file
 let mut cfg = Config::new(None);
 
@@ -69,8 +72,12 @@ cfg.parse("hello = World\nrust = Is great\ntest = \"TEST\"").ok().expect("Error 
 
 Get a value from a config.
 ```rust
+// Import Lib
+use simple_config_parser::config::Config;
+
 // Create a new config with no file
 let mut cfg = Config::new(None);
+cfg.parse("hello = World\nrust = Is great").ok().unwrap();
 
 // Create a new config with a file
 let mut cfg2 = Config::new(Some("config.cfg"));
