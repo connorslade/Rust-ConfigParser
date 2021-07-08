@@ -1,4 +1,5 @@
-# 0.1.5
+# Changelog
+## 0.1.5
 - Update Keywords to be valid for [Crates.io](crates.io)
 - Update Docs for some functions
 - Added Readme to the `lib.rs` file
