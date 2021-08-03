@@ -1,4 +1,9 @@
 # Changelog
+## 0.1.6
+- Add docs for internal functions
+- Update some formatting in the readme
+- Make the parsed config data available to the user
+
 ## 0.1.5
 - Update Keywords to be valid for [Crates.io](crates.io)
 - Update Docs for some functions

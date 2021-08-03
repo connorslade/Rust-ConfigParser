@@ -33,7 +33,7 @@ There are a few reasons:
 - It's code is easy to understand (For me at least)
 - It would make me happy (:P)
 
-## 💥Examples
+## 💥 Examples
 
 Create a new config.
 ```rust

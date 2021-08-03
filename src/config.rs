@@ -7,7 +7,7 @@ static COMMENT_CHARS: [&str; 2] = ["#", ";"];
 /// Config Struct
 pub struct Config {
     pub file: String,
-    data: Vec<[String; 2]>,
+    pub data: Vec<[String; 2]>,
 }
 
 /// Some errors that can be thrown by this module
@@ -202,7 +202,7 @@ impl Config {
     }
 
     /// Get a value from the config as an integer.
-    /// Uses .parse() to parse the value to a int.
+    /// Uses .parse() to parse the value to a int (i64).
     /// ## Example
     /// ```rust
     /// // Import Lib
@@ -229,7 +229,7 @@ impl Config {
     }
 
     /// Get a value from the config as a float.
-    /// Uses .parse() to parse the value to a float.
+    /// Uses .parse() to parse the value to a float (f64).
     /// ## Example
     /// ```rust
     /// // Import Lib
