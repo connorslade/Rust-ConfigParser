@@ -5,6 +5,7 @@
 - Add get_str for getting raw config value
 - add get<T> for gatting a config value as any type (that impls FromStr)
 - Update Exmaples
+- Cleanup Code
 
 ## 0.1.6
 - Add docs for internal functions

@@ -77,7 +77,7 @@ impl Config {
             Err(_) => return Err(ConfigError::FileReadError),
         };
 
-        let mut data = self.data.clone();
+        let mut data = self.data;
         data.append(&mut Config::parse(contents)?);
 
         Ok(Self { data })
@@ -161,10 +161,9 @@ impl Config {
 
     /// Parse a string into the config
     fn parse(input_data: String) -> Result<Vec<[String; 2]>, ConfigError> {
-        let data = input_data.to_string();
         let mut done: Vec<[String; 2]> = Vec::new();
 
-        for line in data.lines() {
+        for line in input_data.lines() {
             // Remove any space at the beginning of the line
             let mut line = line.trim().to_string();
 
@@ -193,5 +192,11 @@ impl Config {
         }
 
         Ok(done)
+    }
+}
+
+impl Default for Config {
+    fn default() -> Config {
+        Config::new()
     }
 }

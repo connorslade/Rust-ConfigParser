@@ -41,10 +41,14 @@ Create a new config from text and a file.
 use simple_config_parser::Config;
 
 // Create a new config and parse text
-let cfg = Config::new().text("hello = world").unwrap();
+let cfg = Config::new()
+    .text("hello = world")
+    .unwrap();
 
 // Create a new config from a file
-let cfg2 = Config::new().file("config.cfg").unwrap();
+let cfg2 = Config::new()
+    .file("config.cfg")
+    .unwrap();
 ```
 
 Get a value from a config.
@@ -53,7 +57,9 @@ Get a value from a config.
 use simple_config_parser::Config;
 
 // Create a new config with no file
-let cfg = Config::new().text("hello = World\nrust = Is great").unwrap();
+let cfg = Config::new()
+    .text("hello = World\nrust = Is great")
+    .unwrap();
 
 // Get a value from the config (As a string)
 println!("Hello, {}", cfg.get_str("hello").unwrap());
@@ -65,7 +71,9 @@ Get value from a config as any type that implements FromStr.
 use simple_config_parser::Config;
 
 // Create a new config with no file
-let mut cfg = Config::new().text("hello = true\nrust = 15\npi = 3.1415926535").unwrap();
+let mut cfg = Config::new()
+    .text("hello = true\nrust = 15\npi = 3.1415926535")
+    .unwrap();
 
 // Get a value from the config as bool
 assert_eq!(cfg.get::<bool>("hello").unwrap(), true);
@@ -81,5 +89,4 @@ assert_eq!(cfg.get::<f32>("pi").unwrap(), 3.1415926535);
 #![warn(missing_docs)]
 
 mod config;
-pub use config::Config;
-pub use config::ConfigError;
+pub use config::{Config, ConfigError};
