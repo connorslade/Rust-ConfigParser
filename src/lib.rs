@@ -9,7 +9,7 @@ I made this because I just needed a simple config parser for one of my projects 
 Just add the following to your `Cargo.toml`:
 ```toml
 [dependencies]
-simple_config_parser = "0.1.5"
+simple_config_parser = "1.0.0"
 ```
 
 ## 📀 Quick Start
@@ -35,76 +35,51 @@ There are a few reasons:
 
 ## 💥 Examples
 
-Create a new config.
+Create a new config from text and a file.
 ```rust
 // Import Lib
-use simple_config_parser::config::Config;
+use simple_config_parser::Config;
 
-// Create a new config with no file
-let mut cfg = Config::new(None);
+// Create a new config and parse text
+let cfg = Config::new().text("hello = world").unwrap();
 
-// Create a new config with a file
-let mut cfg2 = Config::new(Some("config.cfg"));
-```
-
-Read a config file and parse it.
-```rust
-// Import Lib
-use simple_config_parser::config::Config;
-
-// Create a new config with a file
-let mut cfg = Config::new(Some("config.cfg"));
-
-// Read / parse config file
-cfg.read().ok().expect("Error reading the config file");
-```
-
-Load config from a string.
-```rust
-// Import Lib
-use simple_config_parser::config::Config;
-
-// Create a new config with no file
-let mut cfg = Config::new(None);
-
-// Parse config from string
-cfg.parse("hello = World\nrust = Is great\ntest = \"TEST\"").ok().expect("Error parsing the config file");
+// Create a new config from a file
+let cfg2 = Config::new().file("config.cfg").unwrap();
 ```
 
 Get a value from a config.
 ```rust
 // Import Lib
-use simple_config_parser::config::Config;
+use simple_config_parser::Config;
 
 // Create a new config with no file
-let mut cfg = Config::new(None);
-cfg.parse("hello = World\nrust = Is great").ok().unwrap();
-
-// Create a new config with a file
-let mut cfg2 = Config::new(Some("config.cfg"));
+let cfg = Config::new().text("hello = World\nrust = Is great").unwrap();
 
 // Get a value from the config (As a string)
-println!("Hello, {}", cfg.get("hello").unwrap());
+println!("Hello, {}", cfg.get_str("hello").unwrap());
 ```
 
-Get value from a config as a bool, int and float.
+Get value from a config as any type that implements FromStr.
 ```rust
 // Import Lib
-use simple_config_parser::config::Config;
+use simple_config_parser::Config;
 
 // Create a new config with no file
-let mut cfg = Config::new(None);
-cfg.parse("hello = True\nrust = 15\npi = 3.1415926535").ok().unwrap();
+let mut cfg = Config::new().text("hello = true\nrust = 15\npi = 3.1415926535").unwrap();
 
 // Get a value from the config as bool
-assert_eq!(cfg.get_bool("hello").unwrap(), true);
+assert_eq!(cfg.get::<bool>("hello").unwrap(), true);
 
 // Get a value from the config as int
-assert_eq!(cfg.get_int("rust").unwrap(), 15);
+assert_eq!(cfg.get::<i32>("rust").unwrap(), 15);
 
 // Get a value from the config as float
-assert_eq!(cfg.get_float("pi").unwrap(), 3.1415926535);
+assert_eq!(cfg.get::<f32>("pi").unwrap(), 3.1415926535);
 ```
 */
 
-pub mod config;
+#![warn(missing_docs)]
+
+mod config;
+pub use config::Config;
+pub use config::ConfigError;

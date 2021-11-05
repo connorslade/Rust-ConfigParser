@@ -1,93 +1,95 @@
 #![feature(test)]
 
-use simple_config_parser::config::Config;
 extern crate test;
+use test::Bencher;
 
-pub fn parse_string() {
-    let mut cfg = Config::new(None);
-    cfg.parse("hello = world ; Comment").ok().unwrap();
+use simple_config_parser::Config;
+
+pub fn parse_string() -> Option<()> {
+    let cfg = Config::new().text("hello = world ; Comment").ok()?;
+
+    Some(())
 }
 
-pub fn parse_string_get() {
-    let mut cfg = Config::new(None);
-    cfg.parse("hello = world ; Comment").ok().unwrap();
-    cfg.get("hello");
+pub fn parse_string_get() -> Option<()> {
+    let cfg = Config::new().text("hello = world ; Comment").ok()?;
+    cfg.get_str("hello").unwrap();
+    Some(())
 }
 
-pub fn parse_messy_string() {
-    let mut cfg = Config::new(None);
-    cfg.parse("     hello   =   world ;#;#;#; Comment")
-        .ok()
-        .unwrap();
+pub fn parse_messy_string() -> Option<()> {
+    let cfg = Config::new()
+        .text("     hello   =   world ;#;#;#; Comment")
+        .ok()?;
+
+    Some(())
 }
 
-pub fn parse_file() {
-    let mut cfg = Config::new(Some("config.cfg"));
-    cfg.read().ok().unwrap();
+pub fn parse_file() -> Option<()> {
+    let cfg = Config::new().file("config.cfg").ok()?;
+
+    Some(())
 }
 
-pub fn parse_string_get_bool() {
-    let mut cfg = Config::new(None);
-    cfg.parse("hello = true ; Comment").ok().unwrap();
-    cfg.get_bool("hello");
+pub fn parse_string_get_bool() -> Option<()> {
+    let cfg = Config::new().text("hello = true ; Comment").ok()?;
+    cfg.get::<bool>("hello").ok()?;
+
+    Some(())
 }
 
-pub fn parse_string_get_int() {
-    let mut cfg = Config::new(None);
-    cfg.parse("hello = 1 ; Comment").ok().unwrap();
-    cfg.get_int("hello");
+pub fn parse_string_get_int() -> Option<()> {
+    let cfg = Config::new().text("hello = 1 ; Comment").ok()?;
+    cfg.get::<i32>("hello").ok()?;
+
+    Some(())
 }
 
-pub fn parse_string_get_float() {
-    let mut cfg = Config::new(None);
-    cfg.parse("hello = 1.0 ; Comment").ok().unwrap();
-    cfg.get_float("hello");
+pub fn parse_string_get_float() -> Option<()> {
+    let mut cfg = Config::new().text("hello = 1.0 ; Comment").ok()?;
+    cfg.get::<f32>("hello").ok()?;
+
+    Some(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use test::Bencher;
+#[bench]
+/// Basic config parsing benchmark.
+fn bench_parse(b: &mut Bencher) {
+    b.iter(|| parse_string());
+}
 
-    #[bench]
-    /// Basic config parsing benchmark.
-    fn bench_parse(b: &mut Bencher) {
-        b.iter(|| parse_string());
-    }
+#[bench]
+/// Parse string and get value.
+fn bench_parse_get(b: &mut Bencher) {
+    b.iter(|| parse_string_get());
+}
 
-    #[bench]
-    /// Parse string and get value.
-    fn bench_parse_get(b: &mut Bencher) {
-        b.iter(|| parse_string_get());
-    }
+#[bench]
+/// Parse messy config string
+fn bench_parse_messy(b: &mut Bencher) {
+    b.iter(|| parse_messy_string());
+}
 
-    #[bench]
-    /// Parse messy config string
-    fn bench_parse_messy(b: &mut Bencher) {
-        b.iter(|| parse_messy_string());
-    }
+#[bench]
+/// Config file reading and parsing benchmark.
+fn bench_read_parse(b: &mut Bencher) {
+    b.iter(|| parse_file());
+}
 
-    #[bench]
-    /// Config file reading and parsing benchmark.
-    fn bench_read_parse(b: &mut Bencher) {
-        b.iter(|| parse_file());
-    }
+#[bench]
+/// Parse string and get bool value.
+fn bench_parse_get_bool(b: &mut Bencher) {
+    b.iter(|| parse_string_get_bool());
+}
 
-    #[bench]
-    /// Parse string and get bool value.
-    fn bench_parse_get_bool(b: &mut Bencher) {
-        b.iter(|| parse_string_get_bool());
-    }
+#[bench]
+/// Parse string and get bool value.
+fn bench_parse_get_int(b: &mut Bencher) {
+    b.iter(|| parse_string_get_int());
+}
 
-    #[bench]
-    /// Parse string and get bool value.
-    fn bench_parse_get_int(b: &mut Bencher) {
-        b.iter(|| parse_string_get_int());
-    }
-
-    #[bench]
-    /// Parse string and get bool value.
-    fn bench_parse_get_float(b: &mut Bencher) {
-        b.iter(|| parse_string_get_float());
-    }
+#[bench]
+/// Parse string and get bool value.
+fn bench_parse_get_float(b: &mut Bencher) {
+    b.iter(|| parse_string_get_float());
 }

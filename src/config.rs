@@ -1,16 +1,18 @@
 //! This module contains the things needed to load and parse ini like configuration files
 use std::fs;
+use std::path::Path;
 
 /// Define valid comment chars.
-static COMMENT_CHARS: [&str; 2] = ["#", ";"];
+const COMMENT_CHARS: [&str; 2] = ["#", ";"];
 
 /// Config Struct
 pub struct Config {
-    pub file: String,
+    /// Raw Data of the Config
     pub data: Vec<[String; 2]>,
 }
 
 /// Some errors that can be thrown by this module
+#[derive(Debug)]
 pub enum ConfigError {
     /// Error reading the file from disk
     /// Could have been caused by the file not existing or being inaccessible.
@@ -22,109 +24,160 @@ pub enum ConfigError {
     /// The config data is not valid
     /// The data read from the file is not valid.
     InvalidConfig,
+    /// Error Parseing config value into specified type
+    ParseError,
+    /// No item for the key provided exists
+    NoItem,
 }
 
 /// Removes any comments from each line of the config file.
-fn remove_comments(mut s: &str) -> &str {
+fn remove_comments(str: String) -> String {
+    let mut s = str.as_str();
     for i in COMMENT_CHARS.iter() {
         s = s.split(i).next().unwrap();
     }
-    s
-}
-
-/// Remove any leading or trailing whitespace
-fn remove_whitespace(mut value: String) -> String {
-    // Remove any leading spaces
-    while value.starts_with(' ') {
-        value = value[1..value.len()].to_string();
-    }
-
-    // Remove any trailing spaces
-    while value.ends_with(' ') {
-        value = value[..value.len() - 1].to_string();
-    }
-    value
+    s.to_string()
 }
 
 /// Config Implementation
 impl Config {
-    /// Create a new Config struct with all default values except for the file path.
-    /// This path can be any path EX: `Sone("config.cfg")` or `NONE` if you want to load config from a string.
+    /// Create a new Config struct
     /// ## Example
     /// ```rust
     /// // Import Lib
-    /// use simple_config_parser::config::Config;
+    /// use simple_config_parser::Config;
     ///
-    /// // Create a new config with no file
-    /// let mut cfg = Config::new(None);
-    ///
-    /// // Create a new config with a file
-    /// let mut cfg2 = Config::new(Some("config.cfg"));
+    /// let mut cfg = Config::new();
     /// ```
-    pub fn new(file: Option<&str>) -> Self {
-        let file = file.unwrap_or("");
-        Config {
-            file: file.to_string(),
-            data: vec![],
-        }
+    pub fn new() -> Self {
+        Config { data: Vec::new() }
     }
 
-    /// Reads the config file and parses it.
-    /// Is similar to reading the file and passing the data to `cfg.parse();`.
+    /// Reads and parses config from a file
+    ///
+    /// If called more than one time it will append the current values.
+    /// So the recently appended valued will take priority
     /// ## Example
     /// ```rust
     /// // Import Lib
-    /// use simple_config_parser::config::Config;
+    /// use simple_config_parser::Config;
     ///
     /// // Create a new config with a file
-    /// let mut cfg = Config::new(Some("config.cfg"));
+    /// let mut cfg = Config::new().file("config.cfg").unwrap();
     ///
-    /// // Read the config file
-    /// cfg.read().ok().expect("Error reading the config file");
+    /// // Read a value
+    /// assert_eq!(cfg.get_str("hello").unwrap(), "World");
     /// ```
-    pub fn read(&mut self) -> Result<Vec<[String; 2]>, ConfigError> {
-        if self.file.is_empty() {
-            return Err(ConfigError::NoFileDefined);
-        }
-        let mut contents = match fs::read_to_string(&self.file) {
+    pub fn file<T>(self, file: T) -> Result<Self, ConfigError>
+    where
+        T: AsRef<Path>,
+    {
+        let contents = match fs::read_to_string(file) {
             Ok(contents) => contents,
             Err(_) => return Err(ConfigError::FileReadError),
         };
-        contents = contents.replace('\r', "");
-        self.parse(&contents[..])
+
+        let mut data = self.data.clone();
+        data.append(&mut Config::parse(contents)?);
+
+        Ok(Self { data })
     }
 
-    /// Parse a string as a config file.
-    /// Will automatically ignore any carriage returns.
+    /// Parses config from text or anything that impls fmt::Display
     /// ## Example
     /// ```rust
     /// // Import Lib
-    /// use simple_config_parser::config::Config;
+    /// use simple_config_parser::Config;
     ///
-    /// // Create a new config without a file
-    /// let mut cfg = Config::new(None);
+    /// // Create a new config with text
+    /// let mut cfg = Config::new().text("hello = World").unwrap();
     ///
-    /// // Parse a string as a config file
-    /// cfg.parse("hello = world\n\rrust = is great\n\rtest = \"TEST\"").ok().expect("Error parsing the config file");
+    /// // Read a value
+    /// assert_eq!(cfg.get_str("hello").unwrap(), "World");
     /// ```
-    pub fn parse(&mut self, input_data: &str) -> Result<Vec<[String; 2]>, ConfigError> {
+    pub fn text<T>(self, text: T) -> Result<Self, ConfigError>
+    where
+        T: std::fmt::Display,
+    {
+        let data = Config::parse(text.to_string())?;
+
+        Ok(Self { data })
+    }
+
+    /// Get a value from config as ayn type (That Impls str::FromStr)
+    /// ## Example
+    /// ```rust
+    /// // Import Lib
+    /// use simple_config_parser::Config;
+    ///
+    /// // Create a new config with text
+    /// // I knew a lot more of pi at one point :P
+    /// let mut cfg = Config::new().text("pi = 3.14159265358979").unwrap();
+    ///
+    /// // Read a value
+    /// assert_eq!(cfg.get::<f32>("pi").unwrap(), 3.14159265358979);
+    /// ```
+    pub fn get<T>(&self, key: &str) -> Result<T, ConfigError>
+    where
+        T: core::str::FromStr,
+    {
+        let key = key.to_string().to_lowercase();
+        for i in self.data.iter().rev() {
+            if i[0] != key {
+                continue;
+            }
+            match i[1].parse() {
+                Ok(i) => return Ok(i),
+                Err(_) => return Err(ConfigError::ParseError),
+            }
+        }
+
+        Err(ConfigError::NoItem)
+    }
+
+    /// Get a value from config as a String
+    /// ## Example
+    /// ```rust
+    /// // Import Lib
+    /// use simple_config_parser::Config;
+    ///
+    /// // Create a new config with text
+    /// let mut cfg = Config::new().text("pi = 3.14159265358979").unwrap();
+    ///
+    /// // Read a value
+    /// assert_eq!(cfg.get_str("pi").unwrap(), "3.14159265358979");
+    /// ```
+    pub fn get_str(&self, key: &str) -> Result<String, ConfigError> {
+        let key = key.to_string().to_lowercase();
+        for i in self.data.iter().rev() {
+            if i[0] != key {
+                continue;
+            }
+            return Ok(i[1].to_string());
+        }
+
+        Err(ConfigError::NoItem)
+    }
+
+    /// Parse a string into the config
+    fn parse(input_data: String) -> Result<Vec<[String; 2]>, ConfigError> {
         let data = input_data.to_string();
         let mut done: Vec<[String; 2]> = Vec::new();
 
-        for line in data.split('\n') {
+        for line in data.lines() {
             // Remove any space at the beginning of the line
-            let mut line = &remove_whitespace(line.to_string())[..];
+            let mut line = line.trim().to_string();
 
             // Skip empty / commented lines and sections (for now)
             match line.chars().next() {
                 Some(i) if COMMENT_CHARS.contains(&&i.to_string()[..]) => continue,
                 Some('[') => continue,
-                None => continue,
                 Some(_) => {}
+                None => continue,
             }
 
             // Remove any comments from the line
-            line = remove_comments(line);
+            line = remove_comments(line.to_string());
 
             // Split the line into key and value
             let parts: Vec<&str> = line.split('=').collect();
@@ -134,121 +187,11 @@ impl Config {
 
             // Remove any spaces in the key
             let key = parts[0].replace(" ", "").to_lowercase();
-            let mut value = parts[1].to_string();
-
-            value = remove_whitespace(value);
+            let value = parts[1].trim().to_string();
 
             done.push([key, value]);
         }
-        self.data = done.clone();
+
         Ok(done)
-    }
-
-    /// Gets a value from the config.
-    /// Is not CaSe-Sensitive.
-    /// ## Example
-    /// ```rust
-    /// // Import Lib
-    /// use simple_config_parser::config::Config;
-    ///
-    /// // Create a new config with a file
-    /// let mut cfg = Config::new(Some("config.cfg"));
-    ///
-    /// // Read the config file
-    /// cfg.read().ok().expect("Error reading the config file");
-    ///
-    /// // Get a value from the config
-    /// // Will Panic if the key is not found
-    /// println!("Hello, {}", cfg.get("hello").unwrap());
-    ///
-    /// // You can set a default value if the key is not found
-    /// println!("Hello, {}", cfg.get("hello").unwrap_or("Fallback".to_string()));
-    /// ```
-    pub fn get(&self, key: &str) -> Option<String> {
-        let key = key.to_lowercase();
-        for i in self.data.iter().rev() {
-            if i[0] == key {
-                return Some(i[1].to_string());
-            }
-        }
-        None
-    }
-
-    /// Get a value from the config as a boolean.
-    /// It checks if the value is `true` or `false`.
-    /// If the value if anything else, it will return `false`.
-    /// ## Example
-    /// ```rust
-    /// // Import Lib
-    /// use simple_config_parser::config::Config;
-    /// 
-    /// // Create a new config from a string
-    /// let mut cfg = Config::new(None);
-    /// 
-    /// // Parse a string as a config file
-    /// cfg.parse("hello = true\nrust = false").ok().expect("Error parsing the config file");
-    /// 
-    /// // Get a value from the config
-    /// // Will Panic if the key is not found
-    /// let value = cfg.get_bool("hello").unwrap();
-    /// assert_eq!(value, true);
-    /// ```
-    pub fn get_bool(&self, key: &str) -> Option<bool> {
-        let item = self.get(key).unwrap_or("".to_string());
-        if item == "" {
-            return None;
-        }
-        Some(item.to_lowercase() == "true")
-    }
-
-    /// Get a value from the config as an integer.
-    /// Uses .parse() to parse the value to a int (i64).
-    /// ## Example
-    /// ```rust
-    /// // Import Lib
-    /// use simple_config_parser::config::Config;
-    /// 
-    /// // Create a new config from a string
-    /// let mut cfg = Config::new(None);
-    /// cfg.parse("hello = True\nrust = 15").ok().unwrap();
-    /// 
-    /// // Get a value from the config
-    /// // Will Panic if the key is not found
-    /// let hello = cfg.get_bool("hello").unwrap();
-    /// assert_eq!(hello, true);
-    /// 
-    /// let rust = cfg.get_int("rust").unwrap();
-    /// assert_eq!(rust, 15);
-    /// ```
-    pub fn get_int(&self, key: &str) -> Option<i64> {
-        let item = self.get(key).unwrap_or("".to_string());
-        if item == "" {
-            return None;
-        }
-        Some(item.parse::<i64>().unwrap())
-    }
-
-    /// Get a value from the config as a float.
-    /// Uses .parse() to parse the value to a float (f64).
-    /// ## Example
-    /// ```rust
-    /// // Import Lib
-    /// use simple_config_parser::config::Config;
-    /// 
-    /// // Create a new config from a string
-    /// let mut cfg = Config::new(None);
-    /// cfg.parse("pi = 3.1515926").ok().unwrap();
-    /// 
-    /// // Get a value from the config
-    /// // Will Panic if the key is not found
-    /// let pi = cfg.get_float("pi").unwrap();
-    /// assert_eq!(pi, 3.1515926);
-    /// ```
-    pub fn get_float(&self, key: &str) -> Option<f64> {
-        let item = self.get(key).unwrap_or("".to_string());
-        if item == "" {
-            return None;
-        }
-        Some(item.parse::<f64>().unwrap())
     }
 }
